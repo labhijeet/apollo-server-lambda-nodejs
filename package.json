@@ -1,0 +1,9 @@
+{
+  "name": "apollo-server-lambda-nodejs",
+  "version": "1.0.0",
+  "description": "POC for graphql aws lambda",
+  "main": "src/index.js",
+  "author": "Abhijeet Sharma",
+  "license": "MIT",
+  "private": false
+}

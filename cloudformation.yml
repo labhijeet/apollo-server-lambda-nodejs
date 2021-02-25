@@ -11,6 +11,24 @@ Parameters:
     Type: String
 
 Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: lambda-role
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+            - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+      Path: /
+  
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -21,31 +39,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs12.x
       Timeout: 10
-      Description: GraphQL Apollo Server
-
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              Service:
-                - "lambda.amazonaws.com"
-            Action:
-              - "sts:AssumeRole"
-      Policies:
-        - PolicyName: "LambdaFunctionPolicy"
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-            - Effect: "Allow"
-              Action:
-              - logs: CreateLogGroup
-              - logs: CreateLogStream
-              - logs: PutLogEvents
-              Resource: "*"
+      Description: "GraphQL Apollo Server"
 
   GraphQLApi:
     Type: AWS::ApiGateway::RestApi
@@ -56,15 +50,15 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt GraphQLApi.RootResourceId
-      PathPart: !Ref GraphQLApi
-      RestApiId: "searchzipcodes"
+      RestApiId: !Ref GraphQLApi
+      PathPart: "searchzipcodes"
 
   GraphQLApiMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: POST
-      ResourceId: !Ref GraphQLApi
-      RestApiId: !Ref GraphQLApiResource
+      RestApiId: !Ref GraphQLApi
+      ResourceId: !Ref GraphQLApiResource
       AuthorizationType: None
       Integration:
         Type: AWS_PROXY
@@ -79,7 +73,7 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:$${GraphQLApi}/*
 
-  Outputs:
-    ApiUrl:
-      Description: Invoke url of API gateway endpoint
-      Value: !Sub https://${GraphQLApi}.execute-api.${AWS::Region}.amazonaws.com/v1/searchzipcodes
+Outputs:
+  ApiUrl:
+    Description: Invoke url of API gateway endpoint
+    Value: !Sub https://${GraphQLApi}.execute-api.${AWS::Region}.amazonaws.com/v1/searchzipcodes
